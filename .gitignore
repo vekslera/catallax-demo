@@ -1,0 +1,21 @@
+node_modules/
+dist/
+dist-ssr/
+*.local
+.vite/
+.DS_Store
+Thumbs.db
+*.log
+npm-debug.log*
+.env
+.env.*
+!.env.example
+
+# local-only editor/agent settings; launch.json is shared on purpose
+.claude/settings.local.json
+
+# Internal build spec and spare logo variants: kept on disk, out of the public
+# repo. docs/DEVIATIONS.md documents the design decisions on its own.
+docs/catallax-demo-spec-v2.1.md
+docs/catallax-mark-ink.svg
+docs/catallax-mark-white.svg
