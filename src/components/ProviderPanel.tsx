@@ -187,7 +187,17 @@ export function ProviderPanel() {
         </div>
       )}
 
-      <fieldset className="controls" disabled={!live}>
+      {/* Scenario mode is read-only, so the controls are not rendered at all
+          rather than rendered dead. The microcopy they carry is worth keeping,
+          so it stands on its own. */}
+      {!live && (
+        <p className="microcopy microcopy--standalone">
+          Issuance: 1 CTLX per CU. Collateral: s(score) locked.
+        </p>
+      )}
+
+      {live && (
+      <fieldset className="controls">
         <legend className="sr-only">Provider controls</legend>
 
         <label className="field">
@@ -299,6 +309,7 @@ export function ProviderPanel() {
           Kill {fmtInt(failAmount)} CU of capacity
         </button>
       </fieldset>
+      )}
     </section>
   );
 }

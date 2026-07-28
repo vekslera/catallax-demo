@@ -23,35 +23,39 @@ export function VaultDashboard() {
 
   return (
     <section className="vault" aria-label="The vault">
-      <header className="vault__head">
-        <h2 className="vault__title">The vault</h2>
-        <span className={`chip chip--flat${state.uncovered ? ' chip--broken' : ''}`}>
-          {state.uncovered ? 'invariant broken' : 'flat since genesis'}
-        </span>
-      </header>
+      {/* Pinned while the column scrolls: the invariant must never leave the
+          screen, since watching it *not* move is the entire demonstration. */}
+      <div className="vault__pin">
+        <header className="vault__head">
+          <h2 className="vault__title">The vault</h2>
+          <span className={`chip chip--flat${state.uncovered ? ' chip--broken' : ''}`}>
+            {state.uncovered ? 'invariant broken' : 'flat since genesis'}
+          </span>
+        </header>
 
-      <div className="hero">
-        <span className="hero__label">n = V / S</span>
-        <output className={`hero__value${state.uncovered ? ' is-alarm' : ''}`} aria-live="polite">
-          {fmtN(nValue)}
-        </output>
+        <div className="hero">
+          <span className="hero__label">n = V / S</span>
+          <output className={`hero__value${state.uncovered ? ' is-alarm' : ''}`} aria-live="polite">
+            {fmtN(nValue)}
+          </output>
+        </div>
+
+        <dl className="balance">
+          <div className="balance__side balance__side--v">
+            <dt>V · vault</dt>
+            <dd>
+              {fmtInt(v)} <span>CU</span>
+            </dd>
+          </div>
+          <div className="balance__link" aria-hidden="true" />
+          <div className="balance__side balance__side--s">
+            <dt>S · supply</dt>
+            <dd>
+              {fmtInt(s)} <span>CTLX</span>
+            </dd>
+          </div>
+        </dl>
       </div>
-
-      <dl className="balance">
-        <div className="balance__side balance__side--v">
-          <dt>V · vault</dt>
-          <dd>
-            {fmtInt(v)} <span>CU</span>
-          </dd>
-        </div>
-        <div className="balance__link" aria-hidden="true" />
-        <div className="balance__side balance__side--s">
-          <dt>S · supply</dt>
-          <dd>
-            {fmtInt(s)} <span>CTLX</span>
-          </dd>
-        </div>
-      </dl>
 
       <NChart />
       <PriceStrip />

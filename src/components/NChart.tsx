@@ -57,7 +57,10 @@ export function NChart() {
             : '')
         }
       >
-        <ResponsiveContainer width="100%" height={168}>
+        {/* Height comes from the flex row on desktop, where the chart absorbs
+            the column's leftover space; the fallback keeps it usable when the
+            layout is a normal document (mobile). */}
+        <ResponsiveContainer width="100%" height="100%" minHeight={96}>
           <LineChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
             <CartesianGrid stroke="var(--line)" vertical={false} />
             <YAxis

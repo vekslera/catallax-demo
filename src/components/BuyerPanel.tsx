@@ -93,7 +93,14 @@ export function BuyerPanel() {
         </div>
       )}
 
-      <fieldset className="controls" disabled={!live}>
+      {!live && (
+        <p className="microcopy microcopy--standalone">
+          Redemption at par, always. No fee, no haircut.
+        </p>
+      )}
+
+      {live && (
+      <fieldset className="controls">
         <legend className="sr-only">Buyer controls</legend>
 
         <label className="field">
@@ -194,6 +201,7 @@ export function BuyerPanel() {
         </button>
         <p className="microcopy">Redemption at par, always. No fee, no haircut.</p>
       </fieldset>
+      )}
     </section>
   );
 }
