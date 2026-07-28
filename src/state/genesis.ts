@@ -1,20 +1,27 @@
 /**
  * genesis.ts — the opening balance sheet.
  *
- * V = S = 1,000,000 → n = 1.0000. Every CTLX in existence is held by someone:
- * provider stake, provider liquid balances, the anchor-seeded default fund,
- * and a public float. That last account is not decoration — it is what makes
- * the redemption run in Beat 4 a real sequence of redemptions against real
- * balances rather than a number typed into the vault.
+ * V = S = 1,000,000 → n = 1.0000, and every one of those CTLX sits in a named
+ * account that the demo actually shows:
  *
- * Coldharbor is pre-seeded so that Beat 6's default uses its own numbers.
- * Its committed capacity is tuned (50,000 CU) so that after the stake penalty
- * its remaining stake is *less* than the 30,000 CU write-down — which is the
- * only way the default fund visibly does its job. See docs/DEVIATIONS.md.
+ *   Meridian DC   stake    266,000   liquid   679,000
+ *   Coldharbor    stake     32,000   liquid    18,000
+ *   default fund                       5,000   (anchor-seeded, out of Meridian)
+ *                                  ---------
+ *                                  1,000,000
+ *
+ * The genesis provider keeps everything it minted apart from the anchor's fund
+ * contribution. Buyers start at zero and acquire CTLX on the open market in
+ * Beat 2, so the float forms through visible transactions rather than being
+ * conjured into off-screen accounts.
+ *
+ * Coldharbor's committed capacity is tuned (50,000 CU) so that after the stake
+ * penalty its remaining stake is *less* than Beat 6's 30,000 CU write-down —
+ * the only way the default fund visibly does its job. See docs/DEVIATIONS.md.
  */
 
 import { collateralRatio } from './compute';
-import type { Holder, ProtocolState, Provider } from './types';
+import type { Buyer, ProtocolState, Provider } from './types';
 import { QUORUM_K, QUORUM_N } from './compute';
 
 export const GENESIS_VAULT_CU = 1_000_000;
@@ -23,10 +30,6 @@ export const GENESIS_PRICE_USD = 2.0;
 
 const MERIDIAN_CU = 950_000;
 const COLDHARBOR_CU = 50_000;
-
-/** Public float carved out of the genesis provider's liquid balance. */
-const PUBLIC_FLOAT = 600_000;
-const HOLDER_COUNT = 8;
 
 function seedProvider(
   id: string,
@@ -51,16 +54,9 @@ function seedProvider(
   };
 }
 
-const HOLDER_NAMES = [
-  'Ashgrove Holdings',
-  'Ninefold Treasury',
-  'Marlowe & Co.',
-  'Bramber Fund',
-  'Ostrand Capital',
-  'Quillon Partners',
-  'Redwater Trust',
-  'Silverkeep',
-];
+function seedBuyer(id: string, name: string, useCase: string): Buyer {
+  return { id, name, useCase, ctlxBalance: 0, cuHeld: 0, jobsCompleted: 0, reimbursed: 0 };
+}
 
 export function genesisState(mode: ProtocolState['mode'] = 'scenario'): ProtocolState {
   const meridian = seedProvider(
@@ -89,16 +85,9 @@ export function genesisState(mode: ProtocolState['mode'] = 'scenario'): Protocol
     0,
   );
 
-  // The anchor seeds the default fund, and the public float is distributed,
-  // out of the genesis provider's liquid balance. No CTLX is conjured.
-  meridian.liquidCTLX -= GENESIS_FUND + PUBLIC_FLOAT;
-
-  const per = PUBLIC_FLOAT / HOLDER_COUNT;
-  const holders: Holder[] = HOLDER_NAMES.slice(0, HOLDER_COUNT).map((name, i) => ({
-    id: `h${i + 1}`,
-    name,
-    ctlxBalance: per,
-  }));
+  // The anchor seeds the default fund out of the genesis provider's balance.
+  // No CTLX is conjured: it is a transfer, not an issuance.
+  meridian.liquidCTLX -= GENESIS_FUND;
 
   return {
     vaultCU: GENESIS_VAULT_CU,
@@ -108,17 +97,12 @@ export function genesisState(mode: ProtocolState['mode'] = 'scenario'): Protocol
 
     providers: [meridian, coldharbor, ferrolane],
     buyers: [
-      {
-        id: 'vetor',
-        name: 'Vetor Labs',
-        useCase: 'model fine-tuning',
-        ctlxBalance: 0,
-        cuHeld: 0,
-        jobsCompleted: 0,
-        reimbursed: 0,
-      },
+      seedBuyer('vetor', 'Vetor Labs', 'model fine-tuning'),
+      seedBuyer('halcyon', 'Halcyon Bio', 'protein folding'),
+      seedBuyer('northwind', 'Northwind Robotics', 'policy training'),
+      seedBuyer('kestrel', 'Kestrel Analytics', 'risk simulation'),
+      seedBuyer('ridgeline', 'Ridgeline AI', 'inference at scale'),
     ],
-    holders,
     escrowCTLX: 0,
 
     computePriceUSD: GENESIS_PRICE_USD,
@@ -159,12 +143,11 @@ export function genesisState(mode: ProtocolState['mode'] = 'scenario'): Protocol
 
 /**
  * Total CTLX across every account. Must always equal S — the demo's second
- * invariant, and the one that catches accounting bugs the n-check cannot see
- * (n stays 1 if you burn from the vault and forget to debit an account).
+ * invariant, and the one the n-check cannot see (n stays 1 if you burn from the
+ * vault and forget to debit an account).
  */
 export function totalHeldCTLX(s: ProtocolState): number {
   const fromProviders = s.providers.reduce((a, p) => a + p.stakedCTLX + p.liquidCTLX, 0);
   const fromBuyers = s.buyers.reduce((a, b) => a + b.ctlxBalance, 0);
-  const fromHolders = s.holders.reduce((a, h) => a + h.ctlxBalance, 0);
-  return fromProviders + fromBuyers + fromHolders + s.escrowCTLX + s.defaultFund;
+  return fromProviders + fromBuyers + s.escrowCTLX + s.defaultFund;
 }

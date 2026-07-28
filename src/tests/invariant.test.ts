@@ -174,11 +174,11 @@ function randomAction(s: ProtocolState, rnd: () => number): Action | null {
     return { type: 'MINT', providerId: p.id, amountCU: Math.round(rnd() * 50_000) + 1 };
   }
   if (roll < 0.4) {
-    const h = pick(s.holders.filter((x) => x.ctlxBalance > 1));
+    const h = pick(s.buyers.filter((x) => x.ctlxBalance > 1));
     if (h) {
       return {
         type: 'REDEEM',
-        kind: 'holder',
+        kind: 'buyer',
         accountId: h.id,
         amountCTLX: Math.round(rnd() * h.ctlxBalance),
       };
@@ -426,6 +426,10 @@ describe('scenario mode', () => {
     const meridian = s.providers.find((p) => p.id === 'meridian');
     const vetor = s.buyers.find((b) => b.id === 'vetor');
 
+    // Every CTLX is in a named, on-screen account — no anonymous float.
+    expect(s.buyers.length).toBeGreaterThanOrEqual(5);
+    expect(s.buyers.filter((b) => b.cuHeld > 0).length).toBeGreaterThan(1);
+
     expect(coldharbor?.status).toBe('defaulted');
     expect(vetor?.reimbursed).toBeGreaterThan(0);
     expect(vetor?.cuHeld).toBeGreaterThan(0);
@@ -457,11 +461,30 @@ describe('reset', () => {
     expect(fresh.defaultFund).toBe(expected.defaultFund);
     expect(fresh.providers).toEqual(expected.providers);
     expect(fresh.buyers).toEqual(expected.buyers);
-    expect(fresh.holders).toEqual(expected.holders);
     expect(fresh.opCount).toBe(0);
     expect(fresh.maxDeviation).toBe(0);
     expect(fresh.uncovered).toBe(false);
     expect(totalHeldCTLX(fresh)).toBe(fresh.supplyCTLX);
+  });
+});
+
+describe('genesis is fully accounted for on screen', () => {
+  it('leaves the genesis provider holding what it minted', () => {
+    const s = genesisState();
+    const meridian = s.providers.find((p) => p.id === 'meridian');
+
+    // 950,000 CU committed at a 28% collateral ratio, less the anchor's
+    // contribution to the default fund. Nothing is carved off to an
+    // off-screen float.
+    expect(meridian?.stakedCTLX).toBe(266_000);
+    expect(meridian?.liquidCTLX).toBe(679_000);
+    expect(s.buyers.every((b) => b.ctlxBalance === 0)).toBe(true);
+  });
+
+  it('accounts for every CTLX in a named account', () => {
+    const s = genesisState();
+    expect(totalHeldCTLX(s)).toBe(s.supplyCTLX);
+    expect(s.supplyCTLX).toBe(1_000_000);
   });
 });
 

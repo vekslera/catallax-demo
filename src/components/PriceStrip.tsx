@@ -6,7 +6,7 @@
  */
 
 import { useStore } from '../store';
-import { insideBand, premium } from '../state/market';
+import { cheaperRoute, insideBand, premium } from '../state/market';
 import { fmtN, fmtSignedPct, fmtUSD } from '../lib/format';
 import { GLOSSARY } from '../lib/glossary';
 import { Term } from './Term';
@@ -16,6 +16,10 @@ export function PriceStrip() {
   const live = state.mode === 'sandbox';
   const prem = premium(state.quoteUSD, state.computePriceUSD);
   const settled = insideBand(state.quoteUSD, state.computePriceUSD);
+  // Inside the band the two routes cost the same to within noise; claiming one
+  // is cheaper would be the one dishonest number on the page.
+  const atPar = settled;
+  const route = cheaperRoute(state.quoteUSD, state.computePriceUSD);
 
   return (
     <div className="pricestrip">
@@ -45,6 +49,22 @@ export function PriceStrip() {
           />
           <span className="chip__caption">{settled ? 'at par' : 'arbitrage open'}</span>
         </div>
+
+        {/* The holder's cheaper route to compute. Its two costs are exactly the
+            q and P already shown to the left, so only the verdict is added. */}
+        <p className={`routebadge routebadge--${atPar ? 'par' : route}`} aria-live="polite">
+          <Term
+            label={
+              atPar
+                ? 'At par — either route'
+                : route === 'buy'
+                  ? 'Cheaper to buy CTLX'
+                  : 'Cheaper to redeem'
+            }
+            tip={GLOSSARY.route}
+            className="term--plain"
+          />
+        </p>
       </div>
 
       <p className="purchasing">
@@ -59,6 +79,7 @@ export function PriceStrip() {
         />
         <span className="purchasing__sep">·</span> ≈ {fmtUSD(state.computePriceUSD)}
       </p>
+
 
       {live && (
         <label className="field field--slider">

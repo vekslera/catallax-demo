@@ -44,7 +44,11 @@ import type {
 /** Relative tolerance for the invariant assertion. */
 export const N_TOLERANCE = 1e-9;
 
-export type AccountKind = 'buyer' | 'holder';
+/**
+ * Only named buyers hold redeemable CTLX. Provider stake and liquid balances
+ * are held by providers, and neither is redeemed through this path.
+ */
+export type AccountKind = 'buyer';
 
 export type Action =
   | { type: 'RESET'; mode?: Mode }
@@ -231,43 +235,29 @@ function applyMint(s: ProtocolState, providerId: string, amountCU: number): Prot
 /** REDEEM — burn ΔS CTLX, withdraw ΔV = ΔS CU. */
 function applyRedeem(
   s: ProtocolState,
-  kind: AccountKind,
+  _kind: AccountKind,
   accountId: string,
   amountCTLX: number,
 ): ProtocolState {
-  const balance =
-    kind === 'buyer'
-      ? (s.buyers.find((b) => b.id === accountId)?.ctlxBalance ?? 0)
-      : (s.holders.find((h) => h.id === accountId)?.ctlxBalance ?? 0);
+  const holder = s.buyers.find((b) => b.id === accountId);
+  if (!holder) return s;
 
   // Guard: ΔS ≤ balance and ΔS ≤ V. The second cannot bind while the
   // invariant holds — we assert it anyway.
-  const amount = Math.max(0, Math.min(amountCTLX, balance, s.vaultCU));
+  const amount = Math.max(0, Math.min(amountCTLX, holder.ctlxBalance, s.vaultCU));
   if (amount <= 0) return s;
 
   let next = withLedger(s, retire(toLedger(s), amount));
-  next = { ...next, providers: releaseCapacity(next.providers, amount) };
-  let who = 'Holder';
-
-  if (kind === 'buyer') {
-    next = {
-      ...next,
-      buyers: next.buyers.map((b) =>
-        b.id === accountId
-          ? { ...b, ctlxBalance: b.ctlxBalance - amount, cuHeld: b.cuHeld + amount }
-          : b,
-      ),
-    };
-    who = s.buyers.find((b) => b.id === accountId)?.name ?? who;
-  } else {
-    next = {
-      ...next,
-      holders: next.holders.map((h) =>
-        h.id === accountId ? { ...h, ctlxBalance: h.ctlxBalance - amount } : h,
-      ),
-    };
-    who = s.holders.find((h) => h.id === accountId)?.name ?? who;
-  }
+  next = {
+    ...next,
+    providers: releaseCapacity(next.providers, amount),
+    buyers: next.buyers.map((b) =>
+      b.id === accountId
+        ? { ...b, ctlxBalance: b.ctlxBalance - amount, cuHeld: b.cuHeld + amount }
+        : b,
+    ),
+  };
+  const who = holder.name;
 
   return commit(next, {
     text: `${who} redeemed ${fmt(amount)} CTLX`,
@@ -585,7 +575,7 @@ function applyDefaultWriteDown(s: ProtocolState): ProtocolState {
  * invariant is untouched by construction.
  */
 function applyArbStep(s: ProtocolState): ProtocolState {
-  const holderFloat = s.holders.reduce((a, h) => a + h.ctlxBalance, 0);
+  const holderFloat = s.buyers.reduce((a, b) => a + b.ctlxBalance, 0);
   const step = arbitrageStep(
     s.quoteUSD,
     s.computePriceUSD,
@@ -617,7 +607,7 @@ function applyArbStep(s: ProtocolState): ProtocolState {
       // The liquid portion is immediately sold into the float.
       liquidCTLX: q.liquidCTLX,
     }));
-    next = distributeToHolders(next, liquid);
+    next = distributeToFloat(next, liquid);
 
     return commit(next, {
       text: 'Arbitrage: minted and sold',
@@ -628,7 +618,7 @@ function applyArbStep(s: ProtocolState): ProtocolState {
   }
 
   // buy-and-redeem: the arbitrageur buys CTLX from the float and redeems it.
-  next = takeFromHolders(next, step.volume);
+  next = takeFromFloat(next, step.volume);
   next = withLedger(next, retire(toLedger(next), step.volume));
   next = { ...next, providers: releaseCapacity(next.providers, step.volume) };
 
@@ -640,22 +630,23 @@ function applyArbStep(s: ProtocolState): ProtocolState {
   });
 }
 
-function distributeToHolders(s: ProtocolState, amount: number): ProtocolState {
-  if (amount <= 0 || s.holders.length === 0) return s;
-  const per = amount / s.holders.length;
-  return { ...s, holders: s.holders.map((h) => ({ ...h, ctlxBalance: h.ctlxBalance + per })) };
+/** Sell CTLX into the float — that is, spread it evenly across named buyers. */
+function distributeToFloat(s: ProtocolState, amount: number): ProtocolState {
+  if (amount <= 0 || s.buyers.length === 0) return s;
+  const per = amount / s.buyers.length;
+  return { ...s, buyers: s.buyers.map((b) => ({ ...b, ctlxBalance: b.ctlxBalance + per })) };
 }
 
-/** Draw `amount` pro-rata from the public float, capped by what is there. */
-function takeFromHolders(s: ProtocolState, amount: number): ProtocolState {
-  const total = s.holders.reduce((a, h) => a + h.ctlxBalance, 0);
+/** Draw `amount` pro-rata from the float, capped by what is actually held. */
+function takeFromFloat(s: ProtocolState, amount: number): ProtocolState {
+  const total = s.buyers.reduce((a, b) => a + b.ctlxBalance, 0);
   if (total <= 0) return s;
   const take = Math.min(amount, total);
   return {
     ...s,
-    holders: s.holders.map((h) => ({
-      ...h,
-      ctlxBalance: h.ctlxBalance - (h.ctlxBalance / total) * take,
+    buyers: s.buyers.map((b) => ({
+      ...b,
+      ctlxBalance: b.ctlxBalance - (b.ctlxBalance / total) * take,
     })),
   };
 }
@@ -765,7 +756,7 @@ export function reducer(s: ProtocolState, action: Action): ProtocolState {
       // default outruns stake and fund together in any case.
       if (s.defaultFund <= 0) return s;
       const drained = s.defaultFund;
-      const next = distributeToHolders({ ...s, defaultFund: 0 }, drained);
+      const next = distributeToFloat({ ...s, defaultFund: 0 }, drained);
       return commit(next, {
         text: 'Default fund drained to float',
         tag: 'no-op',

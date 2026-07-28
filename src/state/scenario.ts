@@ -47,9 +47,25 @@ const VETOR = 'vetor';
  * the first.
  */
 
-/** Beat 4: eight staggered redemptions totalling 40% of supply at beat start. */
-const RUN_HOLDERS = 8;
+/**
+ * Beat 4: eight staggered redemptions totalling 40% of supply at beat start.
+ *
+ * The run is executed by the named buyers that took up the float in Beat 2 —
+ * every CTLX burned here comes out of an account the viewer can see drain.
+ * Vetor Labs sits it out: it is the protagonist buyer and still has a job to
+ * place in Beat 6.
+ */
+const RUN_BUYERS = ['halcyon', 'northwind', 'kestrel', 'ridgeline'] as const;
+const RUN_TRANCHES = 2;
 const RUN_FRACTION = 0.4;
+
+/** Beat 2: the float forms through visible purchases, not a genesis carve-out. */
+const FLOAT_PURCHASES: ReadonlyArray<{ id: string; amount: number }> = [
+  { id: 'halcyon', amount: 130_000 },
+  { id: 'northwind', amount: 120_000 },
+  { id: 'kestrel', amount: 110_000 },
+  { id: 'ridgeline', amount: 100_000 },
+];
 
 export const BEATS: readonly Beat[] = [
   {
@@ -91,8 +107,18 @@ export const BEATS: readonly Beat[] = [
           amountCTLX: 20_000,
         }),
       },
+      // The rest of the market takes up the float from the same provider.
+      ...FLOAT_PURCHASES.map(({ id, amount }, i) => ({
+        at: 500 + i * 220,
+        action: (): Action => ({
+          type: 'ACQUIRE' as const,
+          buyerId: id,
+          providerId: MERIDIAN,
+          amountCTLX: amount,
+        }),
+      })),
       {
-        at: 1000,
+        at: 1600,
         action: (): Action => ({
           type: 'JOB_SUBMIT',
           buyerId: VETOR,
@@ -101,7 +127,7 @@ export const BEATS: readonly Beat[] = [
         }),
       },
     ],
-    duration: 5000,
+    duration: 5600,
   },
   {
     id: 3,
@@ -128,18 +154,30 @@ export const BEATS: readonly Beat[] = [
     focus: 'vault',
     narration:
       'The stress test. A run: 40% of supply redeems at once. An orderbook design goes insolvent here — the grey line. Catallax contracts elastically. n never moves. There is no first-mover advantage, so there is no reason to run.',
-    prepare: (s) => ({
-      perHolder: Math.round((s.supplyCTLX * RUN_FRACTION) / RUN_HOLDERS),
-    }),
+    // Each running buyer redeems its pro-rata share of 40% of supply, split
+    // into tranches so the run is staggered rather than instantaneous.
+    prepare: (s) => {
+      const target = s.supplyCTLX * RUN_FRACTION;
+      const pool = RUN_BUYERS.reduce(
+        (a, id) => a + (s.buyers.find((b) => b.id === id)?.ctlxBalance ?? 0),
+        0,
+      );
+      const ctx: BeatContext = {};
+      for (const id of RUN_BUYERS) {
+        const held = s.buyers.find((b) => b.id === id)?.ctlxBalance ?? 0;
+        ctx[id] = pool > 0 ? (held / pool) * target : 0;
+      }
+      return ctx;
+    },
     steps: [
       { at: 0, action: (): Action => ({ type: 'TOGGLE_GHOST', visible: true }) },
-      ...Array.from({ length: RUN_HOLDERS }, (_, i) => ({
+      ...Array.from({ length: RUN_BUYERS.length * RUN_TRANCHES }, (_, i) => ({
         at: 200 + i * 600,
         action: (_s: ProtocolState, ctx: BeatContext): Action => ({
-          type: 'REDEEM',
-          kind: 'holder',
-          accountId: `h${i + 1}`,
-          amountCTLX: ctx.perHolder,
+          type: 'REDEEM' as const,
+          kind: 'buyer' as const,
+          accountId: RUN_BUYERS[i % RUN_BUYERS.length],
+          amountCTLX: ctx[RUN_BUYERS[i % RUN_BUYERS.length]] / RUN_TRANCHES,
         }),
       })),
     ],

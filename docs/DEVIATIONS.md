@@ -81,7 +81,33 @@ The property test therefore asserts the *real* invariant from §10.1 — that
 shortfall path is reached at least once across the random sequences, so the
 property is not vacuous.
 
-## 4. Redemption draws down providers' committed capacity
+## 4. The redemption run is executed by named buyers, not generated holders
+
+**Spec:** §6 implementation notes — Beat 4 is "~8 staggered REDEEM actions from
+generated holder names".
+
+**Built:** the run is 8 staggered redemptions by four *named buyers* — Halcyon
+Bio, Northwind Robotics, Kestrel Analytics and Ridgeline AI — each redeeming its
+pro-rata share of 40% of supply, in two tranches. They take up the float through
+visible purchases in Beat 2 rather than being seeded with it at genesis.
+
+**Why:** generated holder names were exactly what the spec asked for, and the
+result was unreadable. Those holders existed only inside the state, so roughly
+600,000 CTLX — 60% of the supply — sat in accounts that never appeared on
+screen, and the genesis provider showed 79,000 spendable when its own committed
+capacity implied 684,000. The supply could not be accounted for by looking at
+the demo, which is the one thing a demo about an accounting identity has to make
+easy.
+
+Now every CTLX is in a named account that is visible: provider stake, provider
+liquid balance, a named buyer, job escrow, or the default fund. The genesis
+provider keeps everything it minted apart from the anchor's 5,000 CTLX fund
+contribution. `totalHeldCTLX() === supplyCTLX` is asserted at genesis and after
+every action in the property tests.
+
+The anonymous `Holder` account type is gone from the state entirely.
+
+## 5. Redemption draws down providers' committed capacity
 
 **Spec:** silent on this. REDEEM is specified as `V ← V − ΔS` only.
 
@@ -98,18 +124,24 @@ unit is delivered out of some provider's committed capacity.
 `Σ committedCU === V` is now asserted after every action in the test suite,
 alongside `Σ all CTLX balances === S`.
 
-## 5. The buyer's route badge has a third state
+## 6. The buyer's route badge has a third state, and moved to the price strip
 
 **Spec:** §3.4 — a badge reading "Cheaper to buy" (`q < P`) or "Cheaper to
 redeem" (`q > P`).
 
 **Built:** both labels, plus "At par — either route" whenever `|q − P|/P ≤ 0.02`.
+The badge sits inline in the vault's price strip rather than in the buyer panel.
 
-**Why:** at genesis `q = P = 2.00` exactly, so a two-state badge has to claim one
-route is cheaper when neither is. Inside the arbitrage band the two routes cost
-the same to within the band width; asserting otherwise would be the one
-dishonest number on the page. Both USD-per-CU figures are always shown next to
-the badge, so the reader can check the arithmetic.
+**Why (third state):** at genesis `q = P = 2.00` exactly, so a two-state badge
+has to claim one route is cheaper when neither is. Inside the arbitrage band the
+two routes cost the same to within the band width; asserting otherwise would be
+the one dishonest number on the page.
+
+**Why (moved):** the badge originally carried its own two-row breakdown of the
+cost of each route. Those two costs are the quote and the compute price — the
+same two numbers the price strip already displays a few pixels away. Restating
+them was duplication, so only the verdict moved, and it now sits beside the
+prices it compares. The freed column space lists the buyers instead.
 
 > Note for review: the spec's parenthetical mapping is worth a second look.
 > Under the demo's own arbitrage mechanism, `q < P` is the condition that makes
@@ -119,7 +151,7 @@ the badge, so the reader can check the arithmetic.
 > implemented as written; if the intent was the other mapping, it is a one-line
 > change in `market.ts`.
 
-## 6. Fonts are a local-first stack, not webfonts
+## 7. Fonts are a local-first stack, not webfonts
 
 **Spec:** §8 asks for IBM Plex Mono / JetBrains Mono and Inter / IBM Plex Sans.
 §10.5 requires the static build to make **no network requests at runtime**.
@@ -134,7 +166,7 @@ constraint, since it is an explicit acceptance criterion. Self-hosting the WOFF2
 files in `public/` would satisfy the letter of §8 at the cost of ~120 kB and
 still be zero-*external*-network; say the word and it is a small change.
 
-## 7. Implementation notes (not deviations)
+## 8. Implementation notes (not deviations)
 
 - **Clocks live in the store.** Attestation stepping, job execution/verification
   and the arbitrage loop are driven by `store.tsx` in both modes. Scenario beats

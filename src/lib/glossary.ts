@@ -54,7 +54,9 @@ export const GLOSSARY = {
   jobsCompleted: 'Jobs this buyer has paid for and had verified.',
   reimbursed: 'CTLX received from a defaulting provider’s forfeited stake.',
   route:
-    'Two ways to obtain compute: buy CTLX and redeem it, or buy compute directly. Whichever is cheaper is the one that closes the gap between the quote and par.',
+    'Two ways to obtain compute: buy CTLX at the quote and redeem it for one compute unit, or buy compute directly at the market price. The two costs are exactly the quote and the compute price shown alongside. Whichever is cheaper is the route that closes the gap.',
+  float:
+    'CTLX held by buyers rather than by providers. Every token is in a named account on this screen — there is no anonymous pool.',
 
   // --- reading the dashboard ---
   ledgerTag:

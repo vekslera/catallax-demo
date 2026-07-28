@@ -39,12 +39,13 @@ export interface Buyer {
   reimbursed: number;
 }
 
-/** Anonymous public float. Exists so the redemption run (Beat 4) uses real balances. */
-export interface Holder {
-  id: string;
-  name: string;
-  ctlxBalance: number;
-}
+/*
+ * There is deliberately no anonymous "holder" account type. Every CTLX in
+ * existence sits in a named account that is visible on screen — provider stake,
+ * provider liquid balance, a named buyer, job escrow, or the default fund.
+ * An off-screen float made the supply impossible to account for by looking at
+ * the demo, which is the one thing this demo has to make easy.
+ */
 
 export type LedgerTag = 'invariant' | 'no-op' | 'uncovered';
 
@@ -132,7 +133,6 @@ export interface ProtocolState {
   // --- participants ---
   providers: Provider[];
   buyers: Buyer[];
-  holders: Holder[];
   /** CTLX held by the protocol against in-flight jobs. Part of S. */
   escrowCTLX: number;
 
