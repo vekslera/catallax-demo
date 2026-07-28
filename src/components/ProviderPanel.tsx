@@ -16,6 +16,8 @@ import {
 } from '../state/compute';
 import { withdrawable } from '../state/settlement';
 import { fmtInt, fmtN, fmtPct } from '../lib/format';
+import { GLOSSARY } from '../lib/glossary';
+import { Term } from './Term';
 import type { Provider } from '../state/types';
 
 function statusLabel(p: Provider): string {
@@ -93,15 +95,7 @@ export function ProviderPanel() {
       <div className="strip">
         <div className="strip__row">
           <span className="strip__label">
-            Reliability score
-            <span
-              className="hint"
-              tabIndex={0}
-              role="note"
-              aria-label="Collateral is priced by measured delivery history."
-            >
-              ?<span className="hint__bubble">Collateral is priced by measured delivery history.</span>
-            </span>
+            <Term label="Reliability score" tip={GLOSSARY.reliabilityScore} />
           </span>
           <span className="strip__value">{Math.round(p.score)}</span>
         </div>
@@ -110,22 +104,30 @@ export function ProviderPanel() {
           <div className="meter__gate" style={{ left: `${MINT_SCORE_GATE}%` }} aria-hidden="true" />
         </div>
         <div className="strip__row">
-          <span className="strip__label">Collateral ratio</span>
+          <span className="strip__label">
+            <Term label="Collateral ratio" tip={GLOSSARY.collateralRatio} />
+          </span>
           <span className="strip__value">{fmtPct(ratio)}</span>
         </div>
       </div>
 
       <dl className="figures">
         <div>
-          <dt>Committed</dt>
+          <dt>
+            <Term label="Committed" tip={GLOSSARY.committed} />
+          </dt>
           <dd>{fmtInt(p.committedCU)} CU</dd>
         </div>
         <div>
-          <dt>Staked</dt>
+          <dt>
+            <Term label="Staked" tip={GLOSSARY.staked} />
+          </dt>
           <dd>{fmtInt(p.stakedCTLX)} CTLX</dd>
         </div>
         <div>
-          <dt>Liquid</dt>
+          <dt>
+            <Term label="Spendable" tip={GLOSSARY.liquid} />
+          </dt>
           <dd>{fmtInt(p.liquidCTLX)} CTLX</dd>
         </div>
       </dl>

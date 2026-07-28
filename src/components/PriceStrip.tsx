@@ -8,6 +8,8 @@
 import { useStore } from '../store';
 import { insideBand, premium } from '../state/market';
 import { fmtN, fmtSignedPct, fmtUSD } from '../lib/format';
+import { GLOSSARY } from '../lib/glossary';
+import { Term } from './Term';
 
 export function PriceStrip() {
   const { state, dispatch } = useStore();
@@ -19,12 +21,16 @@ export function PriceStrip() {
     <div className="pricestrip">
       <div className="pricestrip__figures">
         <div className="pricefig">
-          <span className="pricefig__label">P · compute</span>
+          <span className="pricefig__label">
+            <Term label="Compute price" symbol="P" tip={GLOSSARY.computePrice} />
+          </span>
           <span className="pricefig__value">{fmtUSD(state.computePriceUSD)}</span>
-          <span className="pricefig__unit">per CU</span>
+          <span className="pricefig__unit">per compute unit</span>
         </div>
         <div className="pricefig">
-          <span className="pricefig__label">q · quote</span>
+          <span className="pricefig__label">
+            <Term label="CTLX quote" symbol="q" tip={GLOSSARY.quote} />
+          </span>
           <span className="pricefig__value">{fmtUSD(state.quoteUSD)}</span>
           <span className="pricefig__unit">per CTLX</span>
         </div>
@@ -32,20 +38,32 @@ export function PriceStrip() {
           className={`chip${settled ? '' : ' chip--wide'}${prem < 0 ? ' chip--discount' : ''}`}
           aria-live="polite"
         >
-          {fmtSignedPct(prem)}
+          <Term
+            label={fmtSignedPct(prem)}
+            tip={GLOSSARY.premium}
+            className="term--plain"
+          />
           <span className="chip__caption">{settled ? 'at par' : 'arbitrage open'}</span>
         </div>
       </div>
 
       <p className="purchasing">
-        1 CTLX buys <strong>{fmtN(1)} CU</strong> <span className="purchasing__sep">·</span> ≈{' '}
-        {fmtUSD(state.computePriceUSD)}
+        <Term
+          label={
+            <>
+              1 CTLX buys <strong>{fmtN(1)} compute units</strong>
+            </>
+          }
+          tip={GLOSSARY.purchasingPower}
+          className="term--plain"
+        />
+        <span className="purchasing__sep">·</span> ≈ {fmtUSD(state.computePriceUSD)}
       </p>
 
       {live && (
         <label className="field field--slider">
           <span className="field__label">
-            Compute price P {state.lastArbLeg && <em>last leg: {state.lastArbLeg}</em>}
+            Drag the compute price {state.lastArbLeg && <em>last leg: {state.lastArbLeg}</em>}
           </span>
           <input
             type="range"

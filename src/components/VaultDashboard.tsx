@@ -9,6 +9,8 @@ import { useStore } from '../store';
 import { n as parityOf } from '../state/protocol';
 import { useCountUp } from '../lib/useCountUp';
 import { fmtInt, fmtN } from '../lib/format';
+import { GLOSSARY } from '../lib/glossary';
+import { Term } from './Term';
 import { NChart } from './NChart';
 import { PriceStrip } from './PriceStrip';
 import { FundGauge } from './FundGauge';
@@ -34,7 +36,9 @@ export function VaultDashboard() {
         </header>
 
         <div className="hero">
-          <span className="hero__label">n = V / S</span>
+          <span className="hero__label">
+            <Term label="Backing ratio" symbol="n" tip={GLOSSARY.backingRatio} />
+          </span>
           <output className={`hero__value${state.uncovered ? ' is-alarm' : ''}`} aria-live="polite">
             {fmtN(nValue)}
           </output>
@@ -42,14 +46,18 @@ export function VaultDashboard() {
 
         <dl className="balance">
           <div className="balance__side balance__side--v">
-            <dt>V · vault</dt>
+            <dt>
+              <Term label="Vault" symbol="V" tip={GLOSSARY.vault} />
+            </dt>
             <dd>
               {fmtInt(v)} <span>CU</span>
             </dd>
           </div>
           <div className="balance__link" aria-hidden="true" />
           <div className="balance__side balance__side--s">
-            <dt>S · supply</dt>
+            <dt>
+              <Term label="Supply" symbol="S" tip={GLOSSARY.supply} />
+            </dt>
             <dd>
               {fmtInt(s)} <span>CTLX</span>
             </dd>

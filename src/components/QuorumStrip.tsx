@@ -3,6 +3,8 @@
  */
 
 import { useStore } from '../store';
+import { GLOSSARY } from '../lib/glossary';
+import { Term } from './Term';
 
 export function QuorumStrip() {
   const { state } = useStore();
@@ -16,7 +18,10 @@ export function QuorumStrip() {
   return (
     <div className="quorum">
       <h3 className="quorum__title">
-        Certifier quorum <span className="quorum__ratio">{k} of {n}</span>
+        <Term label="Certifier quorum" tip={GLOSSARY.quorum} />
+        <span className="quorum__ratio">
+          {k} of {n}
+        </span>
       </h3>
       <div className="quorum__dots" role="img" aria-label={`${signed} of ${k} required signatures collected`}>
         {Array.from({ length: n }, (_, i) => (

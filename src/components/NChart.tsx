@@ -19,6 +19,8 @@ import {
 import { useStore } from '../store';
 import { GHOST_FLOOR, GHOST_LABEL, ghostAt } from '../state/ghostline';
 import { fmtN } from '../lib/format';
+import { GLOSSARY } from '../lib/glossary';
+import { Term } from './Term';
 
 export function NChart() {
   const { state, dispatch, reducedMotion } = useStore();
@@ -36,7 +38,9 @@ export function NChart() {
   return (
     <div className="chart">
       <div className="chart__head">
-        <h3 className="chart__title">n over time</h3>
+        <h3 className="chart__title">
+          <Term label="Backing ratio over time" tip={GLOSSARY.backingRatio} />
+        </h3>
         <label className="toggle toggle--inline">
           <input
             type="checkbox"
@@ -111,7 +115,7 @@ export function NChart() {
         <span className="legend legend--real">n = V/S</span>
         {state.ghostVisible && (
           <span className="legend legend--ghost">
-            {GHOST_LABEL}
+            <Term label={GHOST_LABEL} tip={GLOSSARY.ghostLine} className="term--plain" />
             {showInsolvent && <em className="legend__flag">insolvent</em>}
           </span>
         )}

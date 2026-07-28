@@ -550,44 +550,98 @@ input {
   text-overflow: ellipsis;
 }
 
-/* ------------------------------------------------------------ hint bubble */
+/* ------------------------------------------------- explained parameters */
 
-.hint {
-  display: inline-grid;
-  place-items: center;
-  width: 14px;
-  height: 14px;
-  margin-left: 5px;
-  border-radius: 50%;
-  border: 1px solid var(--line-2);
-  font-size: 9px;
-  color: var(--faint);
-  cursor: help;
-  position: relative;
-  vertical-align: middle;
+.term {
+  display: inline;
 }
 
-.hint__bubble {
-  position: absolute;
-  bottom: 130%;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 190px;
+/*
+ * The trigger inherits the surrounding type so a term reads as part of its
+ * label, not as a control bolted on. The dotted underline is the only
+ * affordance, and it is the same one prose has used for a century.
+ */
+.term__trigger {
+  background: none;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  text-align: left;
+  cursor: help;
+  text-decoration: underline dotted;
+  text-decoration-color: rgba(245, 247, 250, 0.34);
+  text-underline-offset: 3px;
+  transition: text-decoration-color 140ms ease, color 140ms ease;
+}
+.term__trigger:hover {
+  text-decoration-color: var(--paper);
+  color: var(--paper);
+}
+
+/* Values and badges carry their own weight; they only need the pointer. */
+.term--plain .term__trigger {
+  text-decoration: none;
+}
+.term--plain .term__trigger:hover {
+  text-decoration: underline dotted;
+  text-decoration-color: currentColor;
+}
+
+.term__symbol {
+  font-family: var(--mono);
+  color: var(--faint);
+  margin-left: 2px;
+  font-size: 0.92em;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+/*
+ * Fixed, not absolute: the desktop columns scroll internally and an absolutely
+ * positioned bubble would be clipped by that overflow. Coordinates are measured
+ * when the bubble opens.
+ */
+.term__tip {
+  position: fixed;
+  z-index: 60;
+  /* Pinned to the origin while closed. Without an explicit `left`/`top` a fixed
+     element sits at its static position, and a `visibility: hidden` box there
+     still expands the document's scrollable width — twenty of them added 124px
+     of phantom horizontal scroll on a phone. Coordinates are supplied inline
+     when the bubble opens. */
+  left: 0;
+  top: 0;
+  width: 264px;
+  max-width: calc(100vw - 16px);
+  transform: translate(-50%, -100%);
   background: var(--ink-3);
   border: 1px solid var(--line-2);
-  border-radius: 8px;
-  padding: 8px 10px;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-family: var(--sans);
   font-size: 11.5px;
-  line-height: 1.4;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1.5;
+  letter-spacing: 0;
+  text-transform: none;
   color: var(--muted);
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.55);
   opacity: 0;
+  visibility: hidden;
   pointer-events: none;
-  transition: opacity 140ms ease;
-  z-index: 20;
+  transition: opacity 130ms ease;
 }
-.hint:hover .hint__bubble,
-.hint:focus .hint__bubble {
+.term__tip.is-below {
+  transform: translate(-50%, 0);
+}
+.term__tip.is-open {
   opacity: 1;
+  visibility: visible;
 }
 
 /* ------------------------------------------------------------ attestation */
@@ -1628,11 +1682,19 @@ input[type='range'] {
     color: var(--alarm);
   }
 
-  .narration {
-    grid-template-columns: 1fr;
-  }
+  .narration,
   .narration--sandbox {
     grid-template-columns: 1fr;
+  }
+
+  /* The desktop layout parks these in a second column. Collapsing the grid to
+     a single track without resetting them creates an implicit column 2 and a
+     phantom 124px of horizontal scroll. */
+  .narration__actions,
+  .narration__readout,
+  .beatdots {
+    grid-column: 1;
+    justify-self: start;
   }
 
   .flow-layer {

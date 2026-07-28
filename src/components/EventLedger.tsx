@@ -8,13 +8,17 @@
 
 import { useStore } from '../store';
 import { fmtN } from '../lib/format';
+import { GLOSSARY } from '../lib/glossary';
+import { Term } from './Term';
 
 export function EventLedger() {
   const { state } = useStore();
 
   return (
     <div className="ledger">
-      <h3 className="ledger__title">Event ledger</h3>
+      <h3 className="ledger__title">
+        <Term label="Event ledger" tip={GLOSSARY.ledgerTag} />
+      </h3>
       <ol className="ledger__list" aria-live="polite" aria-label="Protocol event ledger">
         {state.events.map((e) => (
           <li key={e.id} className={`ledger__row ledger__row--${e.side}`}>

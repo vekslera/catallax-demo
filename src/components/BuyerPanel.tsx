@@ -6,6 +6,8 @@ import { useState } from 'react';
 import { useStore } from '../store';
 import { cheaperRoute, costViaBuy, costViaMarket, insideBand } from '../state/market';
 import { fmtInt, fmtN, fmtUSD } from '../lib/format';
+import { GLOSSARY } from '../lib/glossary';
+import { Term } from './Term';
 
 const JOB_PHASE_LABEL: Record<string, string> = {
   escrowed: 'Escrowed',
@@ -47,22 +49,34 @@ export function BuyerPanel() {
 
       <dl className="figures">
         <div>
-          <dt>Balance</dt>
+          <dt>
+            <Term label="Balance" tip={GLOSSARY.balance} />
+          </dt>
           <dd>{fmtInt(buyer.ctlxBalance)} CTLX</dd>
         </div>
         <div>
-          <dt>Compute held</dt>
+          <dt>
+            <Term label="Compute held" tip={GLOSSARY.computeHeld} />
+          </dt>
           <dd>{fmtInt(buyer.cuHeld)} CU</dd>
         </div>
         <div>
-          <dt>Jobs</dt>
+          <dt>
+            <Term label="Jobs" tip={GLOSSARY.jobsCompleted} />
+          </dt>
           <dd>{fmtInt(buyer.jobsCompleted)}</dd>
         </div>
       </dl>
 
       <div className={`route route--${atPar ? 'par' : route}`} aria-live="polite">
         <p className="route__badge">
-          {atPar ? 'At par — either route' : route === 'buy' ? 'Cheaper to buy' : 'Cheaper to redeem'}
+          <Term
+            label={
+              atPar ? 'At par — either route' : route === 'buy' ? 'Cheaper to buy' : 'Cheaper to redeem'
+            }
+            tip={GLOSSARY.route}
+            className="term--plain"
+          />
         </p>
         <dl className="route__legs">
           <div>
@@ -78,7 +92,7 @@ export function BuyerPanel() {
 
       {buyer.reimbursed > 0 && (
         <div className="reimbursed">
-          <span>Reimbursed from stake</span>
+          <Term label="Reimbursed from stake" tip={GLOSSARY.reimbursed} />
           <strong>{fmtInt(buyer.reimbursed)} CTLX</strong>
         </div>
       )}

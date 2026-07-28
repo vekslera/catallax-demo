@@ -9,6 +9,8 @@
 import { useStore } from '../store';
 import { GENESIS_FUND } from '../state/genesis';
 import { fmtInt } from '../lib/format';
+import { GLOSSARY } from '../lib/glossary';
+import { Term } from './Term';
 
 export function FundGauge() {
   const { state, dispatch } = useStore();
@@ -18,7 +20,9 @@ export function FundGauge() {
   return (
     <div className="gauge">
       <div className="gauge__head">
-        <h3 className="gauge__title">Default fund</h3>
+        <h3 className="gauge__title">
+          <Term label="Default fund" tip={GLOSSARY.defaultFund} />
+        </h3>
         <span className="gauge__value">{fmtInt(state.defaultFund)} CTLX</span>
       </div>
       <div
