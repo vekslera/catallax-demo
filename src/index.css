@@ -26,13 +26,27 @@
      the column scrolls, and any gradient would show a seam at the join. */
   --vault-surface: #151a28;
 
-  --paper: #f5f7fa;
-  --muted: rgba(245, 247, 250, 0.64);
-  --faint: rgba(245, 247, 250, 0.4);
-  --line: rgba(245, 247, 250, 0.1);
-  --line-2: rgba(245, 247, 250, 0.16);
-  --ghost: rgba(245, 247, 250, 0.34);
-  --alarm: #ff5c68;
+  /*
+   * Text is opaque and tinted toward the mark's light-green (1 o'clock) and
+   * light-blue (7 o'clock) arms rather than being white at low opacity.
+   *
+   * Readability first. The old `--faint` was white at 40% opacity, which
+   * composites to about 3.6:1 against the background — under the 4.5:1 minimum,
+   * and it was carrying the 10–11px labels. Every level below now clears 7:1
+   * (WCAG AAA) against --ink:
+   *
+   *   --paper  ~16:1   --muted  ~13.6:1   --faint  ~10.7:1
+   *
+   * Opaque values, not alpha, so a token keeps its contrast on the raised
+   * panel surfaces too instead of drifting with whatever sits behind it.
+   */
+  --paper: #f1f8fa;
+  --muted: #bce0d5;
+  --faint: #9cc7d8;
+  --line: rgba(156, 199, 216, 0.18);
+  --line-2: rgba(156, 199, 216, 0.3);
+  --ghost: #99a4b8;
+  --alarm: #ff7a84;
 
   --sans: 'Inter', 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --mono: 'JetBrains Mono', 'IBM Plex Mono', ui-monospace, 'Cascadia Mono', Consolas, monospace;
@@ -154,7 +168,7 @@ input {
     overflow-y: auto;
     overscroll-behavior: contain;
     scrollbar-width: thin;
-    scrollbar-color: rgba(245, 247, 250, 0.2) transparent;
+    scrollbar-color: rgba(156, 199, 216, 0.34) transparent;
   }
 
   .triptych > .panel::-webkit-scrollbar,
@@ -163,7 +177,7 @@ input {
   }
   .triptych > .panel::-webkit-scrollbar-thumb,
   .triptych > .vaultcol::-webkit-scrollbar-thumb {
-    background: rgba(245, 247, 250, 0.16);
+    background: rgba(156, 199, 216, 0.3);
     border-radius: 4px;
   }
 
@@ -200,21 +214,21 @@ input {
   }
 
   .vault > .chart .chart__canvas {
-    height: 104px;
+    height: 88px;
   }
 
   .vault > .chart,
   .vault > .pricestrip,
   .vault > .gauge,
   .vault > .quorum {
-    margin-bottom: 7px;
+    margin-bottom: 5px;
   }
 
   /* The ledger takes the slack. It is a log: growing it is useful, and it
      already scrolls internally when it runs out of room. */
   .vault > .ledger {
     flex: 1 1 auto;
-    min-height: 76px;
+    min-height: 66px;
     display: flex;
     flex-direction: column;
     margin-bottom: 0;
@@ -445,7 +459,7 @@ input {
   grid-row: 1 / span 2;
   grid-column: 2;
   align-self: center;
-  font-size: 10.5px;
+  font-size: 11px;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--faint);
@@ -535,7 +549,7 @@ input {
 }
 
 .figures dt {
-  font-size: 10.5px;
+  font-size: 11px;
   letter-spacing: 0.05em;
   text-transform: uppercase;
   color: var(--faint);
@@ -573,7 +587,7 @@ input {
   text-align: left;
   cursor: help;
   text-decoration: underline dotted;
-  text-decoration-color: rgba(245, 247, 250, 0.34);
+  text-decoration-color: rgba(156, 199, 216, 0.6);
   text-underline-offset: 3px;
   transition: text-decoration-color 140ms ease, color 140ms ease;
 }
@@ -595,7 +609,7 @@ input {
   font-family: var(--mono);
   color: var(--faint);
   margin-left: 2px;
-  font-size: 0.92em;
+  font-size: 1em;
   text-transform: none;
   letter-spacing: 0;
 }
@@ -746,7 +760,7 @@ input {
 }
 .btn:hover:not(:disabled) {
   background: var(--ink-3);
-  border-color: rgba(245, 247, 250, 0.28);
+  border-color: rgba(156, 199, 216, 0.46);
 }
 .btn:disabled {
   opacity: 0.4;
@@ -829,7 +843,7 @@ input {
 .field__label em {
   font-style: normal;
   font-family: var(--mono);
-  font-size: 10.5px;
+  font-size: 11px;
   color: var(--faint);
   margin-left: 6px;
 }
@@ -961,7 +975,7 @@ input[type='range'] {
   margin: 8px 0 0;
 }
 .route__legs dt {
-  font-size: 10.5px;
+  font-size: 11px;
   color: var(--faint);
 }
 .route__legs dd {
@@ -1024,7 +1038,7 @@ input[type='range'] {
   background: var(--vault-surface);
   border: 1px solid var(--line-2);
   border-radius: 20px;
-  padding: clamp(11px, 1vw, 15px);
+  padding: clamp(10px, 0.85vw, 12px);
   min-width: 0;
 }
 
@@ -1071,7 +1085,7 @@ input[type='range'] {
 }
 .chip__caption {
   color: var(--faint);
-  font-size: 10px;
+  font-size: 11px;
 }
 
 .hero {
@@ -1090,13 +1104,13 @@ input[type='range'] {
 .hero__value {
   display: block;
   font-family: var(--mono);
-  font-size: clamp(40px, 3.9vw, 56px);
+  font-size: clamp(38px, 3.5vw, 50px);
   line-height: 1;
   font-weight: 500;
   letter-spacing: -0.03em;
   margin-top: 4px;
   color: var(--paper);
-  text-shadow: 0 0 44px rgba(245, 247, 250, 0.16);
+  text-shadow: 0 0 46px rgba(180, 226, 240, 0.22);
 }
 .hero__value.is-alarm {
   color: var(--alarm);
@@ -1115,12 +1129,12 @@ input[type='range'] {
   background: var(--ink-2);
   border: 1px solid var(--line);
   border-radius: 12px;
-  padding: 8px 11px;
+  padding: 6px 10px;
   min-width: 0;
 }
 
 .balance__side dt {
-  font-size: 10.5px;
+  font-size: 11px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--faint);
@@ -1184,9 +1198,9 @@ input[type='range'] {
   display: flex;
   flex-wrap: wrap;
   gap: 14px;
-  margin-top: 8px;
+  margin-top: 5px;
   font-family: var(--mono);
-  font-size: 10.5px;
+  font-size: 11px;
   color: var(--faint);
 }
 
@@ -1215,7 +1229,7 @@ input[type='range'] {
 
 .footnote {
   margin-top: 5px;
-  font-size: 10px;
+  font-size: 11px;
   line-height: 1.4;
   color: var(--faint);
   font-style: italic;
@@ -1245,7 +1259,7 @@ input[type='range'] {
 }
 
 .pricefig__label {
-  font-size: 10.5px;
+  font-size: 11px;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--faint);
@@ -1257,7 +1271,7 @@ input[type='range'] {
 }
 
 .pricefig__unit {
-  font-size: 10.5px;
+  font-size: 11px;
   color: var(--faint);
 }
 
@@ -1341,7 +1355,7 @@ input[type='range'] {
   transition: background 200ms ease, border-color 200ms ease;
 }
 .dot--required {
-  border-color: rgba(245, 247, 250, 0.34);
+  border-color: rgba(156, 199, 216, 0.55);
 }
 .dot--signed {
   background: var(--cyan);
@@ -1380,7 +1394,7 @@ input[type='range'] {
 
 .ledger__seq {
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: 11px;
   color: var(--faint);
 }
 
@@ -1397,7 +1411,7 @@ input[type='range'] {
 
 .ledger__tag {
   font-family: var(--mono);
-  font-size: 10.5px;
+  font-size: 11px;
   white-space: nowrap;
   color: var(--faint);
 }
@@ -1433,7 +1447,7 @@ input[type='range'] {
   align-items: center;
   gap: 10px;
   font-family: var(--mono);
-  font-size: 10.5px;
+  font-size: 11px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--faint);
@@ -1480,7 +1494,7 @@ input[type='range'] {
   margin: 0;
 }
 .narration__stats dt {
-  font-size: 10px;
+  font-size: 11px;
   letter-spacing: 0.07em;
   text-transform: uppercase;
   color: var(--faint);
