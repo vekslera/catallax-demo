@@ -45,7 +45,10 @@
   --faint: #9cc7d8;
   --line: rgba(156, 199, 216, 0.18);
   --line-2: rgba(156, 199, 216, 0.3);
+  /* The orderbook comparison is deliberately outside the brand palette: it is
+     not one of the demo's own quantities. */
   --ghost: #99a4b8;
+  --ghost-fill: rgba(153, 164, 184, 0.17);
   --alarm: #ff7a84;
 
   --sans: 'Inter', 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
@@ -228,7 +231,7 @@ input {
      already scrolls internally when it runs out of room. */
   .vault > .ledger {
     flex: 1 1 auto;
-    min-height: 66px;
+    min-height: 44px;
     display: flex;
     flex-direction: column;
     margin-bottom: 0;
@@ -980,7 +983,7 @@ input[type='range'] {
  * better spent listing the buyers.
  */
 .routebadge {
-  margin-left: auto;
+  margin: 0;
   font-size: 12px;
   font-weight: 600;
   color: var(--teal);
@@ -1226,7 +1229,10 @@ input[type='range'] {
   background: var(--paper);
 }
 .legend--ghost::before {
-  background: repeating-linear-gradient(90deg, var(--ghost) 0 4px, transparent 4px 7px);
+  height: 9px;
+  border-radius: 2px;
+  background: var(--ghost-fill);
+  border: 1px solid var(--ghost);
 }
 .legend__flag {
   font-style: normal;
@@ -1235,6 +1241,18 @@ input[type='range'] {
   border-radius: 4px;
   padding: 0 5px;
   margin-left: 4px;
+}
+
+/* Frames the comparison the moment it appears, so it is never seen unlabelled. */
+.ghostnote {
+  margin-top: 4px;
+  padding: 4px 8px;
+  border-left: 2px solid var(--ghost);
+  background: var(--ghost-fill);
+  border-radius: 0 6px 6px 0;
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--muted);
 }
 
 .footnote {
@@ -1283,6 +1301,14 @@ input[type='range'] {
 .pricefig__unit {
   font-size: 11px;
   color: var(--faint);
+}
+
+.pricestrip__foot {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
 }
 
 .purchasing {

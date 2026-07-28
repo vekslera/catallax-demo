@@ -17,7 +17,15 @@ export const GHOST_CURVE: readonly number[] = [
 
 export const GHOST_FLOOR = GHOST_CURVE[GHOST_CURVE.length - 1];
 
-export const GHOST_LABEL = 'orderbook design (simulated)';
+export const GHOST_LABEL = 'hypothetical: orderbook design';
+
+/**
+ * Shown beneath the chart whenever the comparison is on. It has one job: make
+ * it impossible to read the grey band as something Catallax did, or as a
+ * forecast of something Catallax might do.
+ */
+export const GHOST_CAPTION =
+  'Hypothetical — an orderbook design under the same run. Not Catallax, not a forecast.';
 
 /**
  * Value of the counterfactual at sequence index `t`, given the anchor at which

@@ -107,7 +107,34 @@ every action in the property tests.
 
 The anonymous `Holder` account type is gone from the state entirely.
 
-## 5. Redemption draws down providers' committed capacity
+## 5. The orderbook comparison is drawn as a hypothetical, not a series
+
+**Spec:** §4.3 — a "ghost line toggle (orderbook counterfactual)": during the run
+beat, "a precomputed grey line plunges to ~0.13 and flags 'insolvent' while the
+real line stays flat".
+
+**Built:** the same comparison, restyled so it cannot be read as something
+Catallax did. It is a shaded region rather than a dashed line, carries a
+"hypothetical" tag pinned to its own leading edge, is captioned underneath
+whenever it is on, and its toggle reads "Compare with an orderbook design"
+rather than "Orderbook counterfactual".
+
+**Why:** sharing a plot box, a y-axis and a time axis with measured data is
+exactly how a comparison gets mistaken for a second reading of the same system.
+Dashes made it worse — in a financial chart, dashed usually means *projection of
+this thing*, which is the opposite of the intent. And "counterfactual" is not a
+word a cold visitor should have to parse.
+
+There is also a genuine conflation underneath, which the tooltip now states
+outright: the y-axis is Catallax's n, and the other design has no n. It has
+asset coverage against a finite book, which merely happens to start at 1.0 as
+well. The two quantities coincide at the origin and nowhere else.
+
+The comparison still switches on automatically during Beat 4, so the run keeps
+its dramatic beat — but the caption appears in the same moment, so the band is
+never on screen unlabelled.
+
+## 6. Redemption draws down providers' committed capacity
 
 **Spec:** silent on this. REDEEM is specified as `V ← V − ΔS` only.
 
@@ -124,7 +151,7 @@ unit is delivered out of some provider's committed capacity.
 `Σ committedCU === V` is now asserted after every action in the test suite,
 alongside `Σ all CTLX balances === S`.
 
-## 6. The buyer's route badge has a third state, and moved to the price strip
+## 7. The buyer's route badge has a third state, and moved to the price strip
 
 **Spec:** §3.4 — a badge reading "Cheaper to buy" (`q < P`) or "Cheaper to
 redeem" (`q > P`).
@@ -151,7 +178,7 @@ prices it compares. The freed column space lists the buyers instead.
 > implemented as written; if the intent was the other mapping, it is a one-line
 > change in `market.ts`.
 
-## 7. Fonts are a local-first stack, not webfonts
+## 8. Fonts are a local-first stack, not webfonts
 
 **Spec:** §8 asks for IBM Plex Mono / JetBrains Mono and Inter / IBM Plex Sans.
 §10.5 requires the static build to make **no network requests at runtime**.
@@ -166,7 +193,7 @@ constraint, since it is an explicit acceptance criterion. Self-hosting the WOFF2
 files in `public/` would satisfy the letter of §8 at the cost of ~120 kB and
 still be zero-*external*-network; say the word and it is a small change.
 
-## 8. Implementation notes (not deviations)
+## 9. Implementation notes (not deviations)
 
 - **Clocks live in the store.** Attestation stepping, job execution/verification
   and the arbitrage loop are driven by `store.tsx` in both modes. Scenario beats

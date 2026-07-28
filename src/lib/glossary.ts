@@ -62,7 +62,7 @@ export const GLOSSARY = {
   ledgerTag:
     'Every entry records what it did to the invariant. Operations that move the balance sheet show the resulting ratio; transfers that never touch the vault are marked no-op.',
   ghostLine:
-    'A simulated orderbook-backed design under the same redemption run. Its backing craters because a run consumes a finite book; Catallax contracts both sides of the balance sheet instead.',
+    'A hypothetical, drawn for comparison only. It is not Catallax and not a forecast: it is what a different design — one backed by a finite order book — would do under the same redemption run, where a run consumes the book and the backing craters. Catallax contracts both sides of the balance sheet instead, so it has nothing equivalent to plot. Strictly speaking this is that design’s asset coverage rather than an n; the two only coincide at the start.',
 } as const;
 
 export type GlossaryKey = keyof typeof GLOSSARY;

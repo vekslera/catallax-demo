@@ -29,7 +29,7 @@ export function PriceStrip() {
             <Term label="Compute price" symbol="P" tip={GLOSSARY.computePrice} />
           </span>
           <span className="pricefig__value">{fmtUSD(state.computePriceUSD)}</span>
-          <span className="pricefig__unit">per compute unit</span>
+          <span className="pricefig__unit">per CU</span>
         </div>
         <div className="pricefig">
           <span className="pricefig__label">
@@ -49,9 +49,25 @@ export function PriceStrip() {
           />
           <span className="chip__caption">{settled ? 'at par' : 'arbitrage open'}</span>
         </div>
+      </div>
 
-        {/* The holder's cheaper route to compute. Its two costs are exactly the
-            q and P already shown to the left, so only the verdict is added. */}
+      {/* The purchasing-power line and the cheaper-route verdict share a row:
+          the verdict's two costs are exactly the q and P above, so it belongs
+          with them, and a row of its own would cost the vault column 24px. */}
+      <div className="pricestrip__foot">
+        <p className="purchasing">
+          <Term
+            label={
+              <>
+                1 CTLX buys <strong>{fmtN(1)} compute units</strong>
+              </>
+            }
+            tip={GLOSSARY.purchasingPower}
+            className="term--plain"
+          />
+          <span className="purchasing__sep">·</span> ≈ {fmtUSD(state.computePriceUSD)}
+        </p>
+
         <p className={`routebadge routebadge--${atPar ? 'par' : route}`} aria-live="polite">
           <Term
             label={
@@ -66,19 +82,6 @@ export function PriceStrip() {
           />
         </p>
       </div>
-
-      <p className="purchasing">
-        <Term
-          label={
-            <>
-              1 CTLX buys <strong>{fmtN(1)} compute units</strong>
-            </>
-          }
-          tip={GLOSSARY.purchasingPower}
-          className="term--plain"
-        />
-        <span className="purchasing__sep">·</span> ≈ {fmtUSD(state.computePriceUSD)}
-      </p>
 
 
       {live && (
